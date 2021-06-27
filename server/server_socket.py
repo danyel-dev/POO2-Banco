@@ -8,11 +8,12 @@ from conta import Conta
 
 class ClientThreading(threading.Thread):
 
-    def __init__(self, clientAddress, clientsocket):
+    def __init__(self, clientAddress, clientsocket, sinc):
         threading.Thread.__init__(self)
 
         self._clientAddress = clienteAddress
         self._csocket = clientsocket
+        self._sinc = sinc
         print("Nova conexão: ", clientAddress)
         
         self._contas = Conta()
@@ -28,11 +29,17 @@ class ClientThreading(threading.Thread):
             elif received["action"] == "autenticar":        
                 self.autenticar(received)
             elif received["action"] == "saque":
+                self._sinc.acquire()
                 self.saque(received)
+                self._sinc.release()
             elif received["action"] == "deposito":
+                self._sinc.acquire()
                 self.deposito(received)
+                self._sinc.release()
             elif received["action"] == "transferir":
+                self._sinc.acquire()
                 self.transferir(received)
+                self._sinc.release()
             elif received["action"] == "extrato":
                 self.extrato()
             elif received["action"] == "sair":
@@ -83,6 +90,7 @@ class ClientThreading(threading.Thread):
 
 
     def deposito(self, received):
+        
         self._contas.deposito(self._cpf_autenticado, received["valor"])
         msg = "Depósito efetuado com sucesso!"
 
@@ -138,6 +146,7 @@ if __name__ == "__main__":
     serv_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
     serv_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)    
     serv_socket.bind(addr)
+    sinc = threading.Lock()
     print("servidor iniciando")
     print("Aguardando nova conexão")
 
@@ -145,5 +154,5 @@ if __name__ == "__main__":
         serv_socket.listen(10)  
 
         clientSocket, clienteAddress = serv_socket.accept()  
-        newthread = ClientThreading(clienteAddress, clientSocket)
+        newthread = ClientThreading(clienteAddress, clientSocket, sinc)
         newthread.start()

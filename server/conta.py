@@ -5,7 +5,7 @@ import psycopg2
 class Conta:
 
     def __init__ (self):
-        self._connection = psycopg2.connect(database="usuarios", user="ulyana", password="123", host="localhost", port=5432)
+        self._connection = psycopg2.connect(database="usuarios", user="david", password="davidcent", host="localhost", port=5432)
 
         self.cursor = self._connection.cursor()
 
@@ -50,22 +50,24 @@ class Conta:
 
 
     def sacar(self, cpf, valor):  
-        self.cursor.execute("SELECT * FROM usuarios WHERE cpf = %s", cpf)
-        
+        self.cursor.execute("SELECT * FROM usuarios")
+
         for c in self.cursor:
-            if c[5] >= valor:
-                self.cursor.execute("UPDATE usuarios SET saldo = %s WHERE id = %s", (c[5] - valor, c[0]))
-                self._connection.commit()
-                return True
-            else:
-                return False
+            if c[4] == cpf:
+                if c[5] >= valor:
+                    self.cursor.execute("UPDATE usuarios SET saldo = %s WHERE id = %s", (c[5] - valor, c[0]))
+                    self._connection.commit()
+                    return True
+                else:
+                    return False
 
 
     def deposito(self, cpf, valor):  
-        self.cursor.execute("SELECT * FROM usuarios WHERE cpf = %s", (cpf))
+        self.cursor.execute("SELECT * FROM usuarios")
 
         for c in self.cursor:
-            new_valor = c[5]
+            if c[4] == cpf:
+                new_valor = c[5]
 
         self.cursor.execute("UPDATE usuarios SET saldo = %s WHERE id = %s", (new_valor + valor, c[0]))
         self._connection.commit()
