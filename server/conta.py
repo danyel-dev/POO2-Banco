@@ -35,10 +35,11 @@ class Conta:
     
 
     def busca(self, cpf):
-        self.cursor.execute("SELECT * FROM usuarios WHERE cpf = %s", (cpf))
+        self.cursor.execute("SELECT * FROM usuarios")
         
         for conta in self.cursor:
-            return conta
+            if conta[4] == cpf:
+                return conta
 
 
     def mostrar_contas(self):

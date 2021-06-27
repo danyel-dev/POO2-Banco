@@ -38,8 +38,6 @@ class ClientThreading(threading.Thread):
             elif received["action"] == "sair":
                 self.sair()
 
-            self._contas.mostrar_contas()
-
 
     def registrar(self, received):
         cliente = Pessoa(received["nome"], received["sobrenome"], received["cpf"])
